@@ -1,0 +1,33 @@
+name: Deploy to Github Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # build .NET Core environment
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v1.7.2
+      with:
+      # select Blazor WebAssembly which can be used
+        dotnet-version: 3.1.x
+    - name: Build Application
+      # Select the project to deploy (e.g. ./WebPage/WebPage.csproj)
+      run: dotnet publish -c Release ./WebPage/WebPage.csproj
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+           github_token: ${{ secrets.GITHUB_TOKEN }}
+           # push files created by publish command into gh-pages branch (e.g. ./WebPage/bin/Release/netstandard2.1/publish/wwwroot/)
+           publish_dir: ./WebPage/bin/Release/netstandard2.1/publish/wwwroot/
