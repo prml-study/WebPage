@@ -16,7 +16,7 @@
     Noise seed: <input @bind="Fig_1_2_noise_seed" type="number" style="width:100px;" />
 </p>
 <p>
-    Number of train data: <input @bind="Fig_1_2_nb_train" type="number" style="width:100px;" />
+    Number of training data: <input @bind="Fig_1_2_nb_train" type="number" style="width:100px;" />
 </p>
 
 <button class="btn btn-primary" @onclick="Run">Optimize</button>
@@ -25,7 +25,7 @@
 
 @if (@restriction == null)
 {
-    <p><em>Please input polynomial degree and noise seed...</em></p>
+    <p><em>Please input polynomial degree, noise seed and number of training data...</em></p>
 }
 else if (!@restriction.IsValid)
 {
@@ -34,6 +34,7 @@ else if (!@restriction.IsValid)
 else
 {
     <button class="btn btn-primary" @onclick="Handle">Chart</button>
+    <p></p>
     <LineChart @ref="lineChart" TItem="double?" />
     <hr>
 
