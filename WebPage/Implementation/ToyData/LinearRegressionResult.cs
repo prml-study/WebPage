@@ -16,6 +16,18 @@ namespace WebPage.Implementation
         public Vector<double> T_expect { get { return this.givenData.T_expect; } }
         public Vector<double> Weights { get { return this.calibratedData.Weights; } }
 
+        public List<string> Str_X_train { get { return ToStrings(this.X_train); } }
+        public List<string> Str_T_train { get { return ToStrings(this.T_train); } }
+        public List<string> Str_X_test { get { return ToStrings(this.X_test); } }
+        public List<string> Str_T_test { get { return ToStrings(this.T_test); } }
+        public List<string> Str_T_expect { get { return ToStrings(this.T_expect); } }
+        public List<string> Str_Weights { get { return ToStrings(this.Weights); } }
+
+        private static List<string> ToStrings(Vector<double> vec)
+        {
+            return vec.Select(v => v.ToString()).ToList();
+        }
+
         private GivenData givenData;
         private CalibratedData calibratedData;
 

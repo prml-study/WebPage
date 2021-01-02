@@ -1,0 +1,176 @@
+﻿@page "/chapter1/fig_1_2"
+@using WebPage.Implementation
+@using Blazorise.Charts
+
+<p>
+    <span class="oi oi-arrow-left" aria-hidden="true"></span>
+    <a href="/WebPage/chapter1/">Chapter 1</a>
+</p>
+
+<h3>Figure 1.2</h3>
+
+<p>
+    Polynomial degree: <input @bind="Fig_1_2_polnomial_degree" type="number" style="width:100px;" />
+</p>
+<p>
+    Noise seed: <input @bind="Fig_1_2_noise_seed" type="number" style="width:100px;" />
+</p>
+<p>
+    Number of train data: <input @bind="Fig_1_2_nb_train" type="number" style="width:100px;" />
+</p>
+
+<button class="btn btn-primary" @onclick="Run">Optimize</button>
+
+<hr>
+
+@if (@restriction == null)
+{
+    <p><em>Please input polynomial degree and noise seed...</em></p>
+}
+else if (!@restriction.IsValid)
+{
+    <p><em>@restriction.ErrorMessage</em></p>
+}
+else
+{
+    <button class="btn btn-primary" @onclick="Handle">Chart</button>
+    <LineChart @ref="lineChart" TItem="double?" />
+    <hr>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>X_test</th>
+                <th>T_expect</th>
+                <th>T_test</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < @linearRegressionResult.X_test.Count(); ++i)
+            {
+                <tr>
+                    <td>@linearRegressionResult.X_test[i]</td>
+                    <td>@linearRegressionResult.T_expect[i]</td>
+                    <td>@linearRegressionResult.T_test[i]</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    //predict
+    private LinearRegressionResult linearRegressionResult;
+    private Fig_1_2.Restriction restriction;
+
+    private int? Fig_1_2_polnomial_degree { get; set; }
+    private int? Fig_1_2_noise_seed { get; set; }
+    private int? Fig_1_2_nb_train { get; set; }
+
+    private void Run()
+    {
+        if (Fig_1_2_polnomial_degree != null
+            && Fig_1_2_noise_seed != null
+            && Fig_1_2_nb_train != null)
+        {
+            restriction = Fig_1_2.Check(
+                Fig_1_2_polnomial_degree.Value,
+                Fig_1_2_noise_seed.Value,
+                Fig_1_2_nb_train.Value);
+            if (restriction.IsValid)
+            {
+                linearRegressionResult = Fig_1_2.Run(
+                    Fig_1_2_polnomial_degree.Value,
+                    Fig_1_2_noise_seed.Value,
+                    Fig_1_2_nb_train.Value);
+            }
+        }
+    }
+
+    //chart
+    LineChart<double?> lineChart = new LineChart<double?>();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Handle();
+        }
+    }
+    async Task Handle()
+    {
+        if (linearRegressionResult != null)
+        {
+            Run();
+            await lineChart.Clear();
+            await lineChart.AddLabelsDatasetsAndUpdate(
+                this.linearRegressionResult.Str_X_test,
+                GetLineChart_T_expect(),
+                GetLineChart_T_test(),
+                GetLineChart_T_train());
+        }
+    }
+    LineChartDataset<double?> GetLineChart_T_train()
+    {
+        var data = new List<double?>();
+        double[] x_train = this.linearRegressionResult.X_train.ToArray();
+        for (int i = 0; i < this.linearRegressionResult.X_test.Count(); ++i)
+        {
+            double x = this.linearRegressionResult.X_test[i];
+            int idx = Array.IndexOf(x_train, x);
+            if (idx < 0)
+                data.Add(null);
+            else
+                data.Add(this.linearRegressionResult.T_train[idx]);
+        }
+        return new LineChartDataset<double?>
+        {
+            Label = "train data",
+            Data = data,
+            BackgroundColor = null,
+            BorderColor = black,
+            Fill = false,
+            PointRadius = 4,
+            BorderDash = new List<int> { },
+            ShowLine = false,
+        };
+    }
+    LineChartDataset<double?> GetLineChart_T_expect()
+    {
+        return new LineChartDataset<double?>
+        {
+            Label = "expected data",
+            Data = this.linearRegressionResult.T_expect.Select(v => (double?)v).ToList(),
+            BackgroundColor = null,
+            BorderColor = blue,
+            Fill = false,
+            PointRadius = 2,
+            BorderDash = new List<int> { }
+        };
+    }
+    LineChartDataset<double?> GetLineChart_T_test()
+    {
+        return new LineChartDataset<double?>
+        {
+            Label = "trained data",
+            Data = this.linearRegressionResult.T_test.Select(v => (double?)v).ToList(),
+            BackgroundColor = null,
+            BorderColor = red,
+            Fill = false,
+            PointRadius = 2,
+            BorderDash = new List<int> { },
+        };
+    }
+    List<string> red = new List<string>
+    {
+        ChartColor.FromRgba(255, 99, 132, 1f),
+    };
+    List<string> blue = new List<string>
+    {
+        ChartColor.FromRgba(132, 99, 255, 1f),
+    };
+    List<string> black = new List<string>
+    {
+        ChartColor.FromRgba(1, 1, 1, 1f),
+    };
+}

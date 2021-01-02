@@ -20,7 +20,7 @@ namespace WebPage.Implementation
                 this.ErrorMessage = errorMessage;
             }
         }
-        public static Restriction Check(int polynomialDegree, int noiseSeed)
+        public static Restriction Check(int polynomialDegree, int noiseSeed, int nbTrain)
         {
             bool isValid = false;
             string errorMessage = "";
@@ -39,12 +39,19 @@ namespace WebPage.Implementation
                 errorMessage += $"0 < noiseSeed should be satisfied. ";
             }
 
+            if (!(1 <= nbTrain && nbTrain <= 100))
+            {
+                isValid = false;
+                errorMessage += $"1 <= nbTrain <= 100 should be satisfied. ";
+            }
+
             return new Restriction(isValid, errorMessage);
         }
-        public static LinearRegressionResult.GivenData GenerateGivenData(int noiseSeed)
+
+        public static LinearRegressionResult.GivenData GenerateGivenData(int noiseSeed, int nbTrain)
         {
             //prepare train data
-            Vector<double> x_train = Fig_1_2.X_train;
+            Vector<double> x_train = Fig_1_2.X_train(nbTrain);
             Vector<double> t_train = GenerateToyData(noiseSeed, x_train);
             //prepate test data
             Vector<double> x_test = Fig_1_2.X_test;
@@ -53,9 +60,9 @@ namespace WebPage.Implementation
             return new LinearRegressionResult.GivenData(x_train, t_train, x_test, t_expect);
         }
 
-        public static LinearRegressionResult Run(int polynomialDegree, int noiseSeed)
+        public static LinearRegressionResult Run(int polynomialDegree, int noiseSeed, int nbTrain)
         {
-            LinearRegressionResult.GivenData data = GenerateGivenData(noiseSeed);
+            LinearRegressionResult.GivenData data = GenerateGivenData(noiseSeed, nbTrain);
             (int, LinearRegressionResult.CalibratedData) tpl = Predict(data, polynomialDegree);
 
             return new LinearRegressionResult(
@@ -65,7 +72,7 @@ namespace WebPage.Implementation
         }
         public static IEnumerable<LinearRegressionResult> Run()
         {
-            LinearRegressionResult.GivenData data = GenerateGivenData(Fig_1_2.NoiseSeed);
+            LinearRegressionResult.GivenData data = GenerateGivenData(Fig_1_2.NoiseSeed, Fig_1_2.NbTrain);
             return Run(data);
         }
 
@@ -100,12 +107,9 @@ namespace WebPage.Implementation
             return Vector<double>.Build.DenseOfEnumerable(x_test.Select(x => feature.Predict(x, weights)));
         }
 
-        public static Vector<double> X_train
+        public static Vector<double> X_train(int nbTrain)
         {
-            get
-            {
-                return Xs(10);
-            }
+            return Xs(nbTrain);
         }
         public static Vector<double> X_test
         {
@@ -128,6 +132,13 @@ namespace WebPage.Implementation
                 return 1;
             }
         }
+        public static int NbTrain
+        {
+            get
+            {
+                return 10;
+            }
+        }
         public static double NoiseNormalMean
         {
             get
@@ -139,7 +150,7 @@ namespace WebPage.Implementation
         {
             get
             {
-                return 1.0;
+                return 0.1;
             }
         }
         public static IEnumerable<int> PolynomialDegrees
@@ -152,7 +163,7 @@ namespace WebPage.Implementation
 
         private static Vector<double> Xs(int cnt)
         {
-            return Vector<double>.Build.DenseOfEnumerable(Enumerable.Range(0, cnt).Select(i => i * 1.0 / cnt));
+            return Vector<double>.Build.DenseOfEnumerable(Enumerable.Range(0, cnt + 1).Select(i => i * 1.0 / cnt));
         }
 
     }

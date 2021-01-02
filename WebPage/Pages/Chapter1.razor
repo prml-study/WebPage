@@ -1,48 +1,16 @@
 ﻿@page "/chapter1"
 @using WebPage.Implementation
 
-<h1>Chapter 1</h1>
+<h1>Chapter 1: Introduction</h1>
 
 <h2>1.1 Exercise: Polynomial curve fitting</h2>
-<p>
-    Polynomial degree: <input @bind="Fig_1_2_polnomial_degree" type="number" style="width:100px;" />
-</p>
-<p>
-    Noise seed: <input @bind="Fig_1_2_noise_seed" type="number" style="width:100px;" />
-</p>
-<button class="btn btn-primary" @onclick="Run">Optimize</button>
-<hr>
 
-@if (@restriction == null)
-{
-    <p><em>Please input polynomial degree and noise seed...</em></p>
-}
-else if (!@restriction.IsValid)
-{
-    <p><em>@restriction.ErrorMessage</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>X_test</th>
-                <th>T_expect</th>
-                <th>T_test</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (int i = 0; i < @linearRegressionResult.X_test.Count(); ++i)
-            {
-            <tr>
-                <td>@linearRegressionResult.X_test[i]</td>
-                <td>@linearRegressionResult.T_expect[i]</td>
-                <td>@linearRegressionResult.T_test[i]</td>
-            </tr>
-            }
-        </tbody>
-    </table>
-}
+<p>
+    <span class="oi oi-arrow-right" aria-hidden="true"></span>
+    <a href="/WebPage/chapter1/fig_1_2/">figure 1.2</a>
+</p>
+
+@using ChartJs.Blazor
 
 @*
     <h2>1.2 Probability theory</h2>
@@ -72,19 +40,5 @@ else
 *@
 
 @code {
-    private LinearRegressionResult linearRegressionResult;
-    private Fig_1_2.Restriction restriction;
-
-    private int? Fig_1_2_polnomial_degree { get; set; }
-    private int? Fig_1_2_noise_seed { get; set; }
-
-    private void Run()
-    {
-        if (Fig_1_2_polnomial_degree != null && Fig_1_2_noise_seed != null)
-        {
-            restriction = Fig_1_2.Check(Fig_1_2_polnomial_degree.Value, Fig_1_2_noise_seed.Value);
-            if (restriction.IsValid)
-                linearRegressionResult = Fig_1_2.Run(Fig_1_2_polnomial_degree.Value, Fig_1_2_noise_seed.Value);
-        }
-    }
+    
 }
