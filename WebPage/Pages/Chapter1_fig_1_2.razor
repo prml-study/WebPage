@@ -1,0 +1,152 @@
+﻿@page "/chapter1/fig_1_2"
+@using WebPage.Implementation
+@using Blazorise.Charts
+
+<p>
+    <span class="oi oi-arrow-left" aria-hidden="true"></span>
+    <a href="/WebPage/chapter1/">Chapter 1</a>
+</p>
+
+<h3>Figure 1.2</h3>
+
+<p>
+    Polynomial degree: <input @bind="Fig_1_2_polnomial_degree" type="number" style="width:100px;" />
+</p>
+<p>
+    Noise seed: <input @bind="Fig_1_2_noise_seed" type="number" style="width:100px;" />
+</p>
+<button class="btn btn-primary" @onclick="Run">Optimize</button>
+
+<hr>
+
+@if (@restriction == null)
+{
+    <p><em>Please input polynomial degree and noise seed...</em></p>
+}
+else if (!@restriction.IsValid)
+{
+    <p><em>@restriction.ErrorMessage</em></p>
+}
+else
+{
+    <button class="btn btn-primary" @onclick="Handle">Chart</button>
+    <LineChart @ref="lineChart" TItem="double" />
+    <hr>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>X_test</th>
+                <th>T_expect</th>
+                <th>T_test</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < @linearRegressionResult.X_test.Count(); ++i)
+            {
+                <tr>
+                    <td>@linearRegressionResult.X_test[i]</td>
+                    <td>@linearRegressionResult.T_expect[i]</td>
+                    <td>@linearRegressionResult.T_test[i]</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    //predict
+    private LinearRegressionResult linearRegressionResult;
+    private Fig_1_2.Restriction restriction;
+
+    private int? Fig_1_2_polnomial_degree { get; set; }
+    private int? Fig_1_2_noise_seed { get; set; }
+
+    private void Run()
+    {
+        if (Fig_1_2_polnomial_degree != null && Fig_1_2_noise_seed != null)
+        {
+            restriction = Fig_1_2.Check(Fig_1_2_polnomial_degree.Value, Fig_1_2_noise_seed.Value);
+            if (restriction.IsValid)
+            {
+                linearRegressionResult = Fig_1_2.Run(Fig_1_2_polnomial_degree.Value, Fig_1_2_noise_seed.Value);
+            }
+        }
+    }
+
+    //chart
+    LineChart<double> lineChart = new LineChart<double>();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Handle();
+        }
+    }
+    async Task Handle()
+    {
+        if (linearRegressionResult != null)
+        {
+            Run();
+            await lineChart.Clear();
+            await lineChart.AddLabelsDatasetsAndUpdate(
+                this.linearRegressionResult.Str_X_test,
+                GetLineChart_T_expect());
+            await lineChart.AddDatasetsAndUpdate(GetLineChart_T_test());
+        }
+    }
+    LineChartDataset<double> GetLineChart_T_expect()
+    {
+        return new LineChartDataset<double>
+        {
+            Label = "expected data",
+            Data = this.linearRegressionResult.T_expect.ToList(),
+            BackgroundColor = backgroundColorsRed,
+            BorderColor = borderColorsBlue,
+            Fill = false,
+            PointRadius = 2,
+            BorderDash = new List<int> { }
+        };
+    }
+    LineChartDataset<double> GetLineChart_T_test()
+    {
+        return new LineChartDataset<double>
+        {
+            Label = "trained data",
+            Data = this.linearRegressionResult.T_test.ToList(),
+            BackgroundColor = backgroundColorsRed,
+            BorderColor = borderColorsRed,
+            Fill = false,
+            PointRadius = 2,
+            BorderDash = new List<int> { }
+        };
+    }
+    List<string> backgroundColorsRed = new List<string>
+{
+        ChartColor.FromRgba(255, 99, 132, 0.2f),
+        ChartColor.FromRgba(54, 162, 235, 0.2f),
+        ChartColor.FromRgba(255, 206, 86, 0.2f),
+        ChartColor.FromRgba(75, 192, 192, 0.2f),
+        ChartColor.FromRgba(153, 102, 255, 0.2f),
+        ChartColor.FromRgba(255, 159, 64, 0.2f)
+    };
+    List<string> borderColorsRed = new List<string>
+{
+        ChartColor.FromRgba(255, 99, 132, 1f),
+        ChartColor.FromRgba(54, 162, 235, 1f),
+        ChartColor.FromRgba(255, 206, 86, 1f),
+        ChartColor.FromRgba(75, 192, 192, 1f),
+        ChartColor.FromRgba(153, 102, 255, 1f),
+        ChartColor.FromRgba(255, 159, 64, 1f)
+    };
+    List<string> borderColorsBlue = new List<string>
+{
+        ChartColor.FromRgba(132, 99, 255, 1f),
+        ChartColor.FromRgba(235, 162, 54, 1f),
+        ChartColor.FromRgba(86, 206, 255, 1f),
+        ChartColor.FromRgba(192, 192, 75, 1f),
+        ChartColor.FromRgba(255, 102, 153, 1f),
+        ChartColor.FromRgba(64, 159, 255, 1f)
+    };
+}

@@ -41,6 +41,16 @@ namespace WebPage.Implementation
 
             return new Restriction(isValid, errorMessage);
         }
+
+        public static LinearRegressionResult DefaultResult
+        {
+            get
+            {
+                LinearRegressionResult.GivenData givenData = GenerateGivenData(NoiseSeed);
+                var calibratedData = new LinearRegressionResult.CalibratedData(givenData.T_expect, null);
+                return new LinearRegressionResult(0, givenData, calibratedData);
+            }
+        }
         public static LinearRegressionResult.GivenData GenerateGivenData(int noiseSeed)
         {
             //prepare train data
